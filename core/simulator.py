@@ -22,19 +22,12 @@ def _generate_fgn_cholesky(n, H):
 
 def generate_noise_increments(n, dt, noise_type='standard', H=0.5):
     if noise_type == 'standard' or abs(H - 0.5) < 1e-10:
-        # Browniano estándar: ΔB_i = √Δt · N(0,1)
         return np.sqrt(dt) * np.random.randn(n)
     else:
-        # Browniano fraccionario: ΔB^H_i = Δt^H · fGn_i
         fgn = _generate_fgn_cholesky(n, H)
         return (dt ** H) * fgn
 
 def simulate_trajectory(m, k, gamma, sigma, x0, v0, dt, t_final, noise_type='standard', H=0.5):
-    """
-    Ecuaciones de Euler-Maruyama:
-        X_{i} = X_{i-1} + V_{i-1} · Δt
-        V_{i} = V_{i-1} + (-γ/m · V_{i-1} - k/m · X_{i-1}) · Δt + (σ/m) · ΔB_i
-    """
     n_steps = int(round(t_final / dt))
     t = np.linspace(0, t_final, n_steps + 1)
     x = np.zeros(n_steps + 1)
@@ -42,14 +35,12 @@ def simulate_trajectory(m, k, gamma, sigma, x0, v0, dt, t_final, noise_type='sta
     x[0] = x0
     v[0] = v0
 
-    # Incrementos de ruido
     dB = generate_noise_increments(n_steps, dt, noise_type, H)
 
     for i in range(n_steps):
         x[i + 1] = x[i] + v[i] * dt
         v[i + 1] = (v[i] + (-gamma / m * v[i] - k / m * x[i]) * dt + (sigma / m) * dB[i])
 
-    # Retornar vectores de tiempo, posición y velocidad
     return t, x, v
 
 
