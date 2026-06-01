@@ -133,15 +133,6 @@ class SimulatorApp:
             style='Accent.TButton', command=self._on_simulate)
         self.btn_sim.pack(pady=(14, 6), ipadx=20)
 
-        self.status_var = tk.StringVar(value='Listo.')
-        self.lbl_status = ttk.Label(
-            container, textvariable=self.status_var, style='Status.TLabel')
-        self.lbl_status.pack(pady=(0, 4))
-
-        self.progress = ttk.Progressbar(
-            container, length=400, mode='determinate')
-        self.progress.pack(pady=(0, 6))
-
     def _row(self, parent, key, label, row):
         """Crea una fila con etiqueta + entrada para un parámetro."""
         ttk.Label(parent, text=label).grid(
@@ -186,34 +177,22 @@ class SimulatorApp:
             return
 
         self.btn_sim.configure(state='disabled')
-        self.progress['value'] = 0
-        self.progress['maximum'] = params['n_traj']
-
-        def progress_cb(j, total):
-            self.progress['value'] = j + 1
-            self.status_var.set(
-                f"Simulando trayectoria {j + 1} / {total} …")
-            self.root.update_idletasks()
 
         try:
-            self.status_var.set('Simulando trayectorias…')
             self.root.update()
 
             t, all_x, all_v = simulate_multiple(
                 m=params['m'], k=params['k'], gamma=params['gamma'],
                 sigma=params['sigma'], x0=params['x0'], v0=params['v0'],
                 dt=params['dt'], t_final=params['t_final'],
-                n_traj=params['n_traj'],
-                callback=progress_cb)
+                n_traj=params['n_traj'])
 
-            self.status_var.set('Calculando valor medio analítico…')
             self.root.update()
 
             mean_x_anal, mean_v_anal = analytical_mean(
                 t, params['m'], params['k'], params['gamma'],
                 params['x0'], params['v0'])
 
-            self.status_var.set('Generando visualización…')
             self.root.update()
 
             plt.close('all')
@@ -224,25 +203,17 @@ class SimulatorApp:
             fig_anim, anim = create_spring_animation(
                 t, all_x[0], all_v[0], params)
 
-            self.status_var.set('✓  ¡Simulación completada!')
-            self.lbl_status.configure(foreground=SUCCESS)
             self.root.update()
 
             self.root.withdraw()
             plt.show()
             self.root.deiconify()
 
-            self.lbl_status.configure(foreground=FG)
-            self.status_var.set('Listo.')
-
         except Exception as e:
             messagebox.showerror('Error en simulación', str(e))
-            self.status_var.set('Error.')
-            self.lbl_status.configure(foreground=WARN)
 
         finally:
             self.btn_sim.configure(state='normal')
-            self.progress['value'] = 0
 
     def run(self):
         self.root.mainloop()
