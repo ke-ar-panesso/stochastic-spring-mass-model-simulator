@@ -1,5 +1,3 @@
-# Gráficas de trayectorias y valores medios para el oscilador armónico
-
 import numpy as np
 import matplotlib.pyplot as plt
 

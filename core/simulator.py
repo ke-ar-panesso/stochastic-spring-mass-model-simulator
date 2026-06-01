@@ -1,10 +1,7 @@
-# Simulación de Trayectorias para el Oscilador Armónico
-
 import numpy as np
 from scipy.linalg import expm, toeplitz, cholesky
 
 def generate_noise_increments(n, dt):
-    # Browniano estándar: ΔB_i = √Δt · N(0,1)
     return np.sqrt(dt) * np.random.randn(n)
 
 def simulate_trajectory(m, k, gamma, sigma, x0, v0, dt, t_final):
@@ -20,14 +17,12 @@ def simulate_trajectory(m, k, gamma, sigma, x0, v0, dt, t_final):
     x[0] = x0
     v[0] = v0
 
-    # Incrementos de ruido
     dB = generate_noise_increments(n_steps, dt)
 
     for i in range(n_steps):
         x[i + 1] = x[i] + v[i] * dt
         v[i + 1] = (v[i] + (-gamma / m * v[i] - k / m * x[i]) * dt + (sigma / m) * dB[i])
 
-    # Retornar vectores de tiempo, posición y velocidad
     return t, x, v
 
 

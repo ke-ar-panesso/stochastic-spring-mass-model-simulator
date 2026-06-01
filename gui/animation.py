@@ -24,9 +24,6 @@ COLORS = {
 
 
 def _spring_path_3d(z_start, z_end, radius=0.15, n_coils=14):
-    """
-    Genera coordenadas para un resorte 3D vertical.
-    """
     length = z_end - z_start
     if abs(length) < 0.05:
         return np.zeros(2), np.zeros(2), np.array([z_start, z_end])
@@ -51,17 +48,14 @@ def _spring_path_3d(z_start, z_end, radius=0.15, n_coils=14):
 
 
 def _cube_faces(cx, cy, cz, size):
-    """
-    Genera las caras de un cubo 3D para usar con Poly3DCollection.
-    """
     r = size / 2
     return [
-        [[cx-r, cy-r, cz+r], [cx+r, cy-r, cz+r], [cx+r, cy+r, cz+r], [cx-r, cy+r, cz+r]], # Top
-        [[cx-r, cy-r, cz-r], [cx+r, cy-r, cz-r], [cx+r, cy+r, cz-r], [cx-r, cy+r, cz-r]], # Bottom
-        [[cx-r, cy-r, cz-r], [cx+r, cy-r, cz-r], [cx+r, cy-r, cz+r], [cx-r, cy-r, cz+r]], # Front
-        [[cx-r, cy+r, cz-r], [cx+r, cy+r, cz-r], [cx+r, cy+r, cz+r], [cx-r, cy+r, cz+r]], # Back
-        [[cx-r, cy-r, cz-r], [cx-r, cy+r, cz-r], [cx-r, cy+r, cz+r], [cx-r, cy-r, cz+r]], # Left
-        [[cx+r, cy-r, cz-r], [cx+r, cy+r, cz-r], [cx+r, cy+r, cz+r], [cx+r, cy-r, cz+r]], # Right
+        [[cx-r, cy-r, cz+r], [cx+r, cy-r, cz+r], [cx+r, cy+r, cz+r], [cx-r, cy+r, cz+r]], 
+        [[cx-r, cy-r, cz-r], [cx+r, cy-r, cz-r], [cx+r, cy+r, cz-r], [cx-r, cy+r, cz-r]],
+        [[cx-r, cy-r, cz-r], [cx+r, cy-r, cz-r], [cx+r, cy-r, cz+r], [cx-r, cy-r, cz+r]], 
+        [[cx-r, cy+r, cz-r], [cx+r, cy+r, cz-r], [cx+r, cy+r, cz+r], [cx-r, cy+r, cz+r]],
+        [[cx-r, cy-r, cz-r], [cx-r, cy+r, cz-r], [cx-r, cy+r, cz+r], [cx-r, cy-r, cz+r]], 
+        [[cx+r, cy-r, cz-r], [cx+r, cy+r, cz-r], [cx+r, cy+r, cz+r], [cx+r, cy-r, cz+r]], 
     ]
 
 
@@ -90,14 +84,12 @@ def create_spring_animation(t, x, v, params):
         fig.canvas.manager.set_window_title(
             'Animación 3D — Oscilador Armónico Estocástico')
 
-        # Layout: 1 fila, 2 columnas. La izquierda toma más espacio.
         gs = fig.add_gridspec(1, 2, width_ratios=[2, 1], wspace=0.25,
                               left=0.06, right=0.98, top=0.90, bottom=0.12)
         
         ax_trace = fig.add_subplot(gs[0])
         ax_sys = fig.add_subplot(gs[1], projection='3d')
 
-        # ─── Configuración del sistema 3D ─────────────────────────────────────
         z_range = max(abs(x.max()), abs(x.min()), 0.8) * 1.3
         ceiling_z = z_range + 0.8
         mass_size = 0.7
@@ -106,7 +98,6 @@ def create_spring_animation(t, x, v, params):
         ax_sys.set_ylim(-0.6, 0.6)
         ax_sys.set_zlim(-(z_range + 0.5), ceiling_z + 0.1)
         
-        # Eliminar fondo de los ejes 3D
         ax_sys.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
         ax_sys.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
         ax_sys.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
@@ -117,29 +108,24 @@ def create_spring_animation(t, x, v, params):
             'Oscilador Vertical 3D',
             fontsize=12, fontweight='bold', color=COLORS['accent'], pad=10)
 
-        cx, cy, cz = _spring_path_3d(0, 0) # Just dummy variables
+        cx, cy, cz = _spring_path_3d(0, 0) 
         w = 0.5
-        # Techo dibujado como una superficie simple
         xx, yy = np.meshgrid([-w/2, w/2], [-w/2, w/2])
         ax_sys.plot_surface(xx, yy, np.full_like(xx, ceiling_z), color=COLORS['wall'], edgecolor=COLORS['wall'], lw=1.5, alpha=1.0)
 
-        # Suelo
         floor_z = -(z_range + 0.5)
         ax_sys.plot_surface(xx, yy, np.full_like(xx, floor_z), color=COLORS['ground'], alpha=1.0)
 
-        # Línea de equilibrio (z=0)
         ax_sys.plot([-w, w], [0, 0], [0, 0], color=COLORS['eq_line'], ls='--', alpha=0.4, lw=1)
         ax_sys.plot([0, 0], [-w, w], [0, 0], color=COLORS['eq_line'], ls='--', alpha=0.4, lw=1)
         ax_sys.text(0, 0, 0, 'z = 0', color=COLORS['eq_line'], alpha=0.7)
 
-        # Elementos dinámicos del 3D
         spring_line, = ax_sys.plot([], [], [], color=COLORS['spring'], lw=3.0, solid_capstyle='round')
         
         faces = _cube_faces(0, 0, x[0], mass_size)
         mass_cube = Poly3DCollection(faces, facecolors=COLORS['mass'], edgecolors=COLORS['mass_edge'], alpha=1.0, linewidths=1.5)
         ax_sys.add_collection3d(mass_cube)
         
-        # ─── Panel de información ─────────────────────────────────────────────
         info_text = fig.text(
             0.98, 0.95, '',
             fontsize=10, va='top', ha='right', fontfamily='monospace',
@@ -147,7 +133,6 @@ def create_spring_animation(t, x, v, params):
                       edgecolor=COLORS['accent'], alpha=0.92, lw=1.5),
             zorder=10)
 
-        # ─── Configuración de trazas 2D ───────────────────────────────────────
         ax_trace.set_xlim(0, t[-1])
         pad_x = (x.max() - x.min()) * 0.15 + 0.1
         ax_trace.set_ylim(x.min() - pad_x, x.max() + pad_x)
@@ -190,11 +175,9 @@ def create_spring_animation(t, x, v, params):
             i = frame_indices[frame_num]
             zi, vi, ti = x[i], v[i], t[i]
 
-            # Actualizar resorte 3D (desde techo hasta masa)
             sx, sy, sz = _spring_path_3d(ceiling_z, zi + mass_size / 2)
             spring_line.set_data_3d(sx, sy, sz)
 
-            # Actualizar masa 3D
             new_faces = _cube_faces(0, 0, zi, mass_size)
             mass_cube.set_verts(new_faces)
 
