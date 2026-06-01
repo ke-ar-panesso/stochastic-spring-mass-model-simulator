@@ -3,33 +3,11 @@
 import numpy as np
 from scipy.linalg import expm, toeplitz, cholesky
 
-def _fgn_autocovariance(n, H):
-    k = np.arange(n, dtype=float)
-    return 0.5 * (np.abs(k + 1) ** (2 * H)
-                  - 2.0 * np.abs(k) ** (2 * H)
-                  + np.abs(k - 1) ** (2 * H))
+def generate_noise_increments(n, dt):
+    # Browniano estándar: ΔB_i = √Δt · N(0,1)
+    return np.sqrt(dt) * np.random.randn(n)
 
-def _generate_fgn_cholesky(n, H):
-    
-    acf = _fgn_autocovariance(n, H)
-    C = toeplitz(acf)
-    
-    C += 1e-12 * np.eye(n)
-    
-    L = cholesky(C, lower=True)
-    z = np.random.randn(n)
-    return L @ z
-
-def generate_noise_increments(n, dt, noise_type='standard', H=0.5):
-    if noise_type == 'standard' or abs(H - 0.5) < 1e-10:
-        # Browniano estándar: ΔB_i = √Δt · N(0,1)
-        return np.sqrt(dt) * np.random.randn(n)
-    else:
-        # Browniano fraccionario: ΔB^H_i = Δt^H · fGn_i
-        fgn = _generate_fgn_cholesky(n, H)
-        return (dt ** H) * fgn
-
-def simulate_trajectory(m, k, gamma, sigma, x0, v0, dt, t_final, noise_type='standard', H=0.5):
+def simulate_trajectory(m, k, gamma, sigma, x0, v0, dt, t_final):
     """
     Ecuaciones de Euler-Maruyama:
         X_{i} = X_{i-1} + V_{i-1} · Δt
@@ -43,7 +21,7 @@ def simulate_trajectory(m, k, gamma, sigma, x0, v0, dt, t_final, noise_type='sta
     v[0] = v0
 
     # Incrementos de ruido
-    dB = generate_noise_increments(n_steps, dt, noise_type, H)
+    dB = generate_noise_increments(n_steps, dt)
 
     for i in range(n_steps):
         x[i + 1] = x[i] + v[i] * dt
@@ -53,14 +31,14 @@ def simulate_trajectory(m, k, gamma, sigma, x0, v0, dt, t_final, noise_type='sta
     return t, x, v
 
 
-def simulate_multiple(m, k, gamma, sigma, x0, v0, dt, t_final, n_traj, noise_type='standard', H=0.5, callback=None):
+def simulate_multiple(m, k, gamma, sigma, x0, v0, dt, t_final, n_traj, callback=None):
     n_steps = int(round(t_final / dt))
     all_x = np.zeros((n_traj, n_steps + 1))
     all_v = np.zeros((n_traj, n_steps + 1))
 
     for j in range(n_traj):
         t, xj, vj = simulate_trajectory(
-            m, k, gamma, sigma, x0, v0, dt, t_final, noise_type, H
+            m, k, gamma, sigma, x0, v0, dt, t_final
         )
         all_x[j] = xj
         all_v[j] = vj
