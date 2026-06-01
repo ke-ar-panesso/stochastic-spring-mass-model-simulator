@@ -30,7 +30,6 @@ class SimulatorApp:
         'dt':      0.01,
         't_final': 10.0,
         'n_traj':  50,
-        'H':       0.7,
     }
 
     def __init__(self):
@@ -41,7 +40,6 @@ class SimulatorApp:
         self.root.configure(bg=BG)
 
         self.vars = {}
-        self.noise_var = tk.StringVar(value='standard')
 
         self._setup_style()
         self._build_ui()
@@ -130,30 +128,6 @@ class SimulatorApp:
         self._row(frm_sim, 't_final', 'Tiempo final  (T)',       1)
         self._row(frm_sim, 'n_traj',  'Número de trayectorias',  2)
 
-        frm_noise = ttk.LabelFrame(container,
-                                   text='  Tipo de Ruido  ',
-                                   padding=(12, 8))
-        frm_noise.pack(fill='x', pady=(0, 6))
-        frm_noise.columnconfigure(1, weight=1)
-
-        ttk.Radiobutton(
-            frm_noise, text='Browniano Estándar   (H = 0.5)',
-            variable=self.noise_var, value='standard',
-            command=self._on_noise_change
-        ).grid(row=0, column=0, columnspan=2, sticky='w', pady=2)
-
-        ttk.Radiobutton(
-            frm_noise, text='Browniano Fraccionario  (fBm)',
-            variable=self.noise_var, value='fractional',
-            command=self._on_noise_change
-        ).grid(row=1, column=0, columnspan=2, sticky='w', pady=2)
-
-        self._row(frm_noise, 'H', 'Parámetro de Hurst  (H)', 2)
-        self.lbl_H = frm_noise.grid_slaves(row=2, column=0)[0]
-        self.entry_H = frm_noise.grid_slaves(row=2, column=1)[0]
-
-        self._on_noise_change()
-
         self.btn_sim = ttk.Button(
             container, text='▶   S I M U L A R',
             style='Accent.TButton', command=self._on_simulate)
@@ -177,15 +151,6 @@ class SimulatorApp:
         entry.grid(row=row, column=1, sticky='e', padx=(8, 4), pady=4)
         self.vars[key] = var
 
-    def _on_noise_change(self):
-        if self.noise_var.get() == 'fractional':
-            state = 'normal'
-        else:
-            state = 'disabled'
-        for widget in self.entry_H.master.grid_slaves(row=2):
-            if isinstance(widget, ttk.Entry):
-                widget.configure(state=state)
-
     def _parse_params(self):
         try:
             p = {}
@@ -195,8 +160,6 @@ class SimulatorApp:
                     p[key] = int(val)
                 else:
                     p[key] = float(val)
-
-            p['noise_type'] = self.noise_var.get()
 
             if p['m'] <= 0:
                 raise ValueError('La masa (m) debe ser positiva.')
@@ -210,20 +173,6 @@ class SimulatorApp:
                 raise ValueError('El tiempo final debe ser positivo.')
             if p['n_traj'] < 1:
                 raise ValueError('Se necesita al menos 1 trayectoria.')
-            if p['noise_type'] == 'fractional':
-                if not (0 < p['H'] < 1):
-                    raise ValueError('El parámetro H debe estar en (0, 1).')
-            else:
-                p['H'] = 0.5
-
-            n_steps = int(round(p['t_final'] / p['dt']))
-            if p['noise_type'] == 'fractional' and n_steps > 3000:
-                if not messagebox.askyesno(
-                    'Advertencia',
-                    f'La simulación con Browniano fraccionario y {n_steps} '
-                    f'pasos puede ser lenta (descomposición de Cholesky).\n\n'
-                    f'¿Desea continuar?'):
-                    return None
 
             return p
 
@@ -255,7 +204,6 @@ class SimulatorApp:
                 sigma=params['sigma'], x0=params['x0'], v0=params['v0'],
                 dt=params['dt'], t_final=params['t_final'],
                 n_traj=params['n_traj'],
-                noise_type=params['noise_type'], H=params['H'],
                 callback=progress_cb)
 
             self.status_var.set('Calculando valor medio analítico…')

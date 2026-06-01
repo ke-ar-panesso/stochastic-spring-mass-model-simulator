@@ -42,15 +42,8 @@ def create_trajectory_plots(t, all_x, all_v, mean_x_anal, mean_v_anal, params):
         fig.canvas.manager.set_window_title(
             'Trayectorias — Oscilador Armónico Estocástico')
 
-        nt = params.get('noise_type', 'standard')
-        if nt == 'fractional':
-            noise_str = f"Browniano Fraccionario (H={params.get('H', 0.7):.2f})"
-        else:
-            noise_str = "Browniano Estándar"
-
         fig.suptitle(
-            f"Trayectorias del Oscilador  —  {n_traj} trayectorias  —  "
-            f"Ruido: {noise_str}",
+            f"Trayectorias del Oscilador  —  {n_traj} trayectorias  —  Ruido Blanco Estándar",
             fontsize=13, fontweight='bold', color=COLORS['accent'], y=0.97)
 
         alpha_traj = max(0.04, min(0.35, 5.0 / n_traj))
