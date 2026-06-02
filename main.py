@@ -9,33 +9,33 @@ from core.simulator import simulate_multiple, analytical_mean
 from gui.animation import create_spring_animation
 from gui.plots import create_trajectory_plots
 
-BG          = '#12121f'
-FRAME_BG    = '#1a1a30'
-ENTRY_BG    = '#262645'
-FG          = '#c8cad8'
-ACCENT      = '#7c6aef'
-ACCENT_DARK = '#6355cc'
+BG          = '#f0f4f8'
+FRAME_BG    = '#ffffff'
+ENTRY_BG    = '#e2e8f0'
+FG          = '#2d3748'
+ACCENT      = '#3182ce'
+ACCENT_DARK = '#2b6cb0'
 BTN_FG      = '#ffffff'
-WARN        = '#ffa657'
-SUCCESS     = '#3fb950'
+WARN        = '#ed8936'
+SUCCESS     = '#48bb78'
 
 class SimulatorApp:
     DEFAULTS = {
         'm':       1.0,
         'k':       4.0,
         'gamma':   0.5,
-        'sigma':   0.3,
+        'sigma':   0.6,
         'x0':      1.0,
         'v0':      0.0,
         'dt':      0.01,
-        't_final': 10.0,
-        'n_traj':  50,
+        't_final': 5.0,
+        'n_traj':  5,
     }
 
     def __init__(self):
         self.root = tk.Tk()
         self.root.title('Simulador — Oscilador Armónico Estocástico')
-        self.root.geometry('500x820')
+        self.root.geometry('500x680')
         self.root.resizable(False, False)
         self.root.configure(bg=BG)
 
@@ -62,8 +62,8 @@ class SimulatorApp:
         s.configure('Desc.TLabel', background=BG, foreground=FG,
                     font=('Segoe UI', 8))
 
-        s.configure('TEntry', fieldbackground=ENTRY_BG, foreground='#ffffff',
-                    insertcolor='#ffffff', font=('Consolas', 11),
+        s.configure('TEntry', fieldbackground=ENTRY_BG, foreground=FG,
+                    insertcolor=FG, font=('Consolas', 11),
                     borderwidth=1, padding=4)
 
         s.configure('TRadiobutton', background=FRAME_BG, foreground=FG,
@@ -77,8 +77,8 @@ class SimulatorApp:
                     font=('Segoe UI', 14, 'bold'),
                     padding=(20, 14), borderwidth=0)
         s.map('Accent.TButton',
-              background=[('active', ACCENT_DARK), ('pressed', '#5245b0'),
-                          ('disabled', '#3a3a5a')])
+              background=[('active', ACCENT_DARK), ('pressed', '#2c5282'),
+                          ('disabled', '#cbd5e0')])
 
         s.configure('Status.TLabel', background=BG, foreground=FG,
                     font=('Segoe UI', 10), anchor='center')
@@ -95,7 +95,7 @@ class SimulatorApp:
         subtitle = tk.Label(
             container,
             text='Simulación por Método de Euler-Maruyama',
-            font=('Segoe UI', 9), fg='#8888aa', bg=BG)
+            font=('Segoe UI', 9), fg='#718096', bg=BG)
         subtitle.pack(pady=(0, 10))
 
         frm_model = ttk.LabelFrame(container,
@@ -134,7 +134,6 @@ class SimulatorApp:
         self.btn_sim.pack(pady=(14, 6), ipadx=20)
 
     def _row(self, parent, key, label, row):
-        """Crea una fila con etiqueta + entrada para un parámetro."""
         ttk.Label(parent, text=label).grid(
             row=row, column=0, sticky='w', padx=(4, 8), pady=4)
         var = tk.StringVar(value=str(self.DEFAULTS[key]))

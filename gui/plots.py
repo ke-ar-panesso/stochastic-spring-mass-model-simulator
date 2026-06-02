@@ -2,25 +2,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 COLORS = {
-    'bg':        '#0d1117',
-    'panel':     '#161b22',
-    'grid':      '#21262d',
-    'text':      '#c9d1d9',
-    'accent':    '#7c6aef',
-    'traj_x':    '#58a6ff',
-    'traj_v':    '#f778ba',
-    'mean_emp':  '#3fb950',
-    'mean_anal': '#ffd700',
+    'bg':        '#f6f8fa',
+    'panel':     '#ffffff',
+    'grid':      '#d0d7de',
+    'text':      '#24292f',
+    'accent':    '#0969da',
+    'traj_x':    "#0077ff",
+    'traj_v':    "#ff0099",
+    'mean_anal': "#63d222",
 }
-
 
 def create_trajectory_plots(t, all_x, all_v, mean_x_anal, mean_v_anal, params):
     n_traj = all_x.shape[0]
 
-    mean_x_emp = np.mean(all_x, axis=0)
-    mean_v_emp = np.mean(all_v, axis=0)
-
     with plt.rc_context({
+        'toolbar': 'None',
         'figure.facecolor': COLORS['bg'],
         'axes.facecolor':   COLORS['bg'],
         'axes.edgecolor':   COLORS['grid'],
@@ -48,11 +44,9 @@ def create_trajectory_plots(t, all_x, all_v, mean_x_anal, mean_v_anal, params):
 
         for j in range(n_traj):
             ax_x.plot(t, all_x[j], color=COLORS['traj_x'],
-                      alpha=alpha_traj, lw=0.7)
-
-        ax_x.plot(t, mean_x_emp, color=COLORS['mean_emp'], lw=2.2,
-                  label='Media empírica', zorder=4)
-        ax_x.plot(t, mean_x_anal, color=COLORS['mean_anal'], lw=2.2,
+                      alpha=alpha_traj, lw=1.2)
+            
+        ax_x.plot(t, mean_x_anal, color=COLORS['mean_anal'], lw=3.2,
                   ls='--', label='Media analítica  E[X(t)]', zorder=5)
         ax_x.set_ylabel('Posición  X(t)', fontsize=12)
         ax_x.grid(True, alpha=0.18)
@@ -64,11 +58,9 @@ def create_trajectory_plots(t, all_x, all_v, mean_x_anal, mean_v_anal, params):
 
         for j in range(n_traj):
             ax_v.plot(t, all_v[j], color=COLORS['traj_v'],
-                      alpha=alpha_traj, lw=0.7)
-
-        ax_v.plot(t, mean_v_emp, color=COLORS['mean_emp'], lw=2.2,
-                  label='Media empírica', zorder=4)
-        ax_v.plot(t, mean_v_anal, color=COLORS['mean_anal'], lw=2.2,
+                      alpha=alpha_traj, lw=1.2)
+            
+        ax_v.plot(t, mean_v_anal, color=COLORS['mean_anal'], lw=3.2,
                   ls='--', label='Media analítica  E[V(t)]', zorder=5)
         ax_v.set_ylabel('Velocidad  V(t)', fontsize=12)
         ax_v.set_xlabel('Tiempo  (s)', fontsize=12)
